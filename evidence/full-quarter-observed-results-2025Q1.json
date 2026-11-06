@@ -1,0 +1,34 @@
+{
+  "source": "Local user-provided terminal and Streamlit dashboard screenshots, Nov 4, 2026, America/New_York",
+  "historical_dataset": "BTS Reporting Carrier On-Time Performance",
+  "coverage_months": [
+    "2025-01",
+    "2025-02",
+    "2025-03"
+  ],
+  "last_flight_date": "2025-03-31",
+  "reporting_flights": 1645503,
+  "eligible_inferred_intervals": 1432291,
+  "on_time_measured_arrivals_percent_displayed": 80.3,
+  "cancelled_flights": 30640,
+  "dbt_tests": {
+    "pass": 53,
+    "warn": 0,
+    "error": 0,
+    "skip": 0
+  },
+  "publication_created_at_utc": "2026-11-05T01:43:17.421092+00:00",
+  "run_status": "succeeded",
+  "execution_mode": "Docker CLI, mode=live; not an Airflow-driven full-quarter execution",
+  "counts_provenance": "Exact counts from user-provided Live dashboard; database row count independently queried by user as approximately 1.6M",
+  "airflow_demo_validation": {
+    "nine_task_instances_successful": true,
+    "dataset_scope": "March 8-10, 2025 demo"
+  },
+  "limitations": [
+    "Remote GitHub Actions CI not confirmed as passing",
+    "Six local pytest tests skipped",
+    "Full-quarter Airflow orchestration not demonstrated",
+    "No independent direct full-quarter CSV reconciliation outside the pipeline was performed"
+  ]
+}

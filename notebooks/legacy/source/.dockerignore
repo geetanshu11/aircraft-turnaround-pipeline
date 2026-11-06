@@ -1,0 +1,6 @@
+runtime*
+*.zip
+*.ipynb
+__pycache__
+.pytest_cache
+!demo/bts_demo.zip

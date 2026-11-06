@@ -1,0 +1,12 @@
+**
+!requirements/app.lock
+!requirements/airflow-constraints-3.3.2-python3.12.txt
+!src/**
+!dbt/**
+!demo/**
+!dashboard/**
+!scripts/**
+!dags/**
+dbt/target/
+dbt/logs/
+**/__pycache__/

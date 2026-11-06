@@ -1,0 +1,92 @@
+{
+  "dataset": "BTS Reporting Carrier On-Time Performance — three-day curated sample",
+  "source_manifest": "demo/source.json",
+  "source_bts_monthly_zip": "https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2025_3.zip",
+  "bundled_demo_zip_sha256": "6153012b1ad63cbfa1a3fe73cdc061a86e998ed681da881f1fdced94767f9ce6",
+  "date_start": "2025-03-08",
+  "date_end": "2025-03-10",
+  "total_reported_flights": 58357,
+  "reporting_airlines": 14,
+  "distinct_airports": 332,
+  "distinct_recorded_aircraft_tail_numbers": 5114,
+  "cancelled_flights": 218,
+  "diverted_flights": 89,
+  "measured_arrivals": 58050,
+  "on_time_arrivals": 47654,
+  "late_arrivals": 10396,
+  "on_time_measured_arrival_pct": 82.0913,
+  "cancellation_pct_all_reported": 0.3736,
+  "diversion_pct_all_reported": 0.1525,
+  "daily": [
+    {
+      "date": "2025-03-08",
+      "flights": 17895,
+      "cancelled": 105,
+      "diverted": 37,
+      "measured": 17753,
+      "ontime": 14548,
+      "on_time_pct": 81.9467
+    },
+    {
+      "date": "2025-03-09",
+      "flights": 20173,
+      "cancelled": 63,
+      "diverted": 38,
+      "measured": 20072,
+      "ontime": 16137,
+      "on_time_pct": 80.3956
+    },
+    {
+      "date": "2025-03-10",
+      "flights": 20289,
+      "cancelled": 50,
+      "diverted": 14,
+      "measured": 20225,
+      "ontime": 16969,
+      "on_time_pct": 83.9011
+    }
+  ],
+  "selected_busy_origins": [
+    {
+      "origin": "DFW",
+      "flights": 2665,
+      "cancelled": 48,
+      "measured": 2608,
+      "on_time_arrivals": 1743,
+      "on_time_pct": 66.8328
+    },
+    {
+      "origin": "DEN",
+      "flights": 2603,
+      "cancelled": 2,
+      "measured": 2597,
+      "on_time_arrivals": 2314,
+      "on_time_pct": 89.1028
+    },
+    {
+      "origin": "ATL",
+      "flights": 2503,
+      "cancelled": 5,
+      "measured": 2495,
+      "on_time_arrivals": 1962,
+      "on_time_pct": 78.6373
+    },
+    {
+      "origin": "ORD",
+      "flights": 2375,
+      "cancelled": 1,
+      "measured": 2372,
+      "on_time_arrivals": 2056,
+      "on_time_pct": 86.6779
+    },
+    {
+      "origin": "PHX",
+      "flights": 1926,
+      "cancelled": 6,
+      "measured": 1918,
+      "on_time_arrivals": 1608,
+      "on_time_pct": 83.8373
+    }
+  ],
+  "note": "Computed independently from the bundled BTS demo CSV; excludes cancellations, diversions and missing ArrDelay from the arrival punctuality denominator. The on-time threshold is arrival delay <15 min."
+}

@@ -1,0 +1,133 @@
+name: aircraft-turnaround
+x-app-env: &app-env
+  PGHOST: postgres
+  PGPORT: 5432
+  PGUSER: aircraft
+  PGPASSWORD: ${WAREHOUSE_PASSWORD:?Run scripts/setup.ps1 first}
+  DATA_ROOT: /data
+  CHUNK_ROWS: ${CHUNK_ROWS:-50000}
+  MAX_TURN_MINUTES: ${MAX_TURN_MINUTES:-720}
+  DBT_THREADS: ${DBT_THREADS:-2}
+  S3_BUCKET: ${S3_BUCKET:-}
+  S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-}
+  AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+x-airflow: &airflow
+  image: aircraft-turnaround-airflow:local
+  build: {context: ., dockerfile: Dockerfile.airflow}
+  profiles: [full]
+  environment:
+    <<: *app-env
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${AIRFLOW_DB_PASSWORD}@postgres/airflow
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__PARALLELISM: 2
+    AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+    AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: admin:admin
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /state/simple_auth_manager_passwords.json
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:?Run setup first}
+    AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET:?Run setup first}
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-api:8080/execution/
+    AIRFLOW__API__BASE_URL: http://localhost:${AIRFLOW_PORT:-8080}
+    AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
+    AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
+    AIRCRAFT_SCHEDULE: ${AIRCRAFT_SCHEDULE:-}
+  volumes: [platform-data:/data, airflow-logs:/opt/airflow/logs, airflow-state:/state]
+  restart: unless-stopped
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: platform_admin
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?Run setup first}
+      WAREHOUSE_PASSWORD: ${WAREHOUSE_PASSWORD}
+      AIRFLOW_DB_PASSWORD: ${AIRFLOW_DB_PASSWORD}
+    ports: ["127.0.0.1:${POSTGRES_PORT:-5432}:5432"]
+    volumes: [postgres-data:/var/lib/postgresql/data, ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/01-aircraft.sh:ro]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -h 127.0.0.1 -U platform_admin -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+    restart: unless-stopped
+  volumes-init:
+    image: python:3.12-slim-bookworm
+    user: "0:0"
+    command: [sh, -c, "chown 50000:0 /data /state /logs && chmod 2775 /data /state /logs"]
+    volumes: [platform-data:/data, airflow-state:/state, airflow-logs:/logs]
+    restart: "no"
+  pipeline:
+    image: aircraft-turnaround-app:local
+    build: .
+    profiles: [tools]
+    environment: *app-env
+    volumes: [platform-data:/data]
+    depends_on:
+      postgres: {condition: service_healthy}
+      volumes-init: {condition: service_completed_successfully}
+  dashboard:
+    image: aircraft-turnaround-app:local
+    build: .
+    entrypoint: [python, -m, streamlit, run, /opt/platform/dashboard/app.py]
+    command: [--server.address=0.0.0.0, --server.port=8501, --browser.gatherUsageStats=false]
+    environment: {DATA_ROOT: /data}
+    ports: ["127.0.0.1:${DASHBOARD_PORT:-8501}:8501"]
+    volumes: [platform-data:/data:ro]
+    depends_on:
+      volumes-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+  airflow-init:
+    <<: *airflow
+    entrypoint: [bash, -c]
+    command: ["python /opt/platform/scripts/init_airflow.py && airflow db migrate"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      volumes-init: {condition: service_completed_successfully}
+    restart: "no"
+  airflow-api:
+    <<: *airflow
+    command: api-server
+    ports: ["127.0.0.1:${AIRFLOW_PORT:-8080}:8080"]
+    depends_on:
+      airflow-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/v2/monitor/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 30
+      start_period: 30s
+  airflow-scheduler:
+    <<: *airflow
+    command: scheduler
+    depends_on:
+      airflow-api: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, "airflow jobs check --job-type SchedulerJob --local"]
+      interval: 20s
+      timeout: 15s
+      retries: 10
+      start_period: 30s
+  airflow-dag-processor:
+    <<: *airflow
+    command: dag-processor
+    depends_on:
+      airflow-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD-SHELL, "airflow jobs check --job-type DagProcessorJob --local"]
+      interval: 20s
+      timeout: 15s
+      retries: 10
+      start_period: 30s
+volumes:
+  postgres-data:
+  platform-data:
+  airflow-logs:
+  airflow-state:

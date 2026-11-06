@@ -1,0 +1,14 @@
+FROM apache/airflow:3.3.2-python3.12
+COPY requirements/airflow-constraints-3.3.2-python3.12.txt /tmp/airflow-constraints.txt
+USER airflow
+RUN pip install --no-cache-dir 'apache-airflow==3.3.2' 'psycopg2-binary==2.9.13' --constraint /tmp/airflow-constraints.txt && pip check
+USER root
+COPY requirements/app.lock /tmp/app.lock
+RUN python -m venv /opt/platform-venv && /opt/platform-venv/bin/pip install --no-cache-dir --require-hashes -r /tmp/app.lock && /opt/platform-venv/bin/pip check
+COPY --chown=airflow:root src /opt/platform/src
+COPY --chown=airflow:root dbt /opt/platform/dbt
+COPY --chown=airflow:root demo /opt/platform/demo
+COPY --chown=airflow:root scripts /opt/platform/scripts
+COPY --chown=airflow:root dags /opt/airflow/dags
+ENV PLATFORM_PYTHON=/opt/platform-venv/bin/python PYTHONPATH=/opt/platform/src DATA_ROOT=/data
+USER airflow

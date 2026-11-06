@@ -1,0 +1,11 @@
+{
+  "url": "https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2025_3.zip",
+  "original_bts_zip_sha256": "9c80fbc2112cdbf3f0613ec2001ba019b3ad75511cd69657080736e7eda9cef4",
+  "sha256": "6153012b1ad63cbfa1a3fe73cdc061a86e998ed681da881f1fdced94767f9ce6",
+  "source_kind": "curated_BTS_three_day_slice",
+  "received_at": "2026-10-28T00:09:10.358423+00:00",
+  "date_start": "2025-03-08",
+  "date_end": "2025-03-10",
+  "rows": 58357,
+  "selection": "All reporting-carrier records with FlightDate from 2025-03-08 through 2025-03-10 inclusive; CSV reserialized with pandas; empty trailing unnamed column removed."
+}

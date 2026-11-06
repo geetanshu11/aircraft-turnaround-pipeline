@@ -1,0 +1,10 @@
+numpy==2.2.6
+pandas==2.2.3
+duckdb==1.4.3
+pyarrow==19.0.1
+requests==2.32.5
+plotly==6.3.0
+filelock==3.20.0
+airportsdata==20250909
+tzdata==2025.2
+pytest==8.4.2

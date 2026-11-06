@@ -1,0 +1,170 @@
+version: 2
+models:
+- name: fact_flights
+  description: One current accepted reporting-carrier flight; changed months are replaced
+    atomically.
+  columns:
+  - name: flight_id
+    data_tests:
+    - unique
+    - not_null
+  - name: origin_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('dim_airports')
+          field: airport_id
+  - name: dest_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('dim_airports')
+          field: airport_id
+  - name: carrier_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('dim_carriers')
+          field: carrier_id
+  - name: flight_date
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('dim_dates')
+          field: flight_date
+- name: dim_airports
+  description: One BTS airport ID; latest observed code with a current airport reference.
+  columns:
+  - name: airport_id
+    data_tests:
+    - unique
+    - not_null
+- name: dim_carriers
+  description: One DOT carrier ID; latest observed reporting code.
+  columns:
+  - name: carrier_id
+    data_tests:
+    - unique
+    - not_null
+- name: dim_dates
+  description: One observed local service date.
+  columns:
+  - name: flight_date
+    data_tests:
+    - unique
+    - not_null
+- name: int_aircraft_observations
+  description: One assigned accepted flight, including cancellation, diversion and
+    invalid clocks.
+  columns:
+  - name: flight_id
+    data_tests:
+    - unique
+    - not_null
+- name: int_aircraft_connections
+  description: One assigned outbound observation and its preceding reported leg.
+  columns:
+  - name: flight_id
+    data_tests:
+    - unique
+    - not_null
+  - name: previous_flight_id
+    data_tests:
+    - relationships:
+        arguments:
+          to: ref('fact_flights')
+          field: flight_id
+- name: fact_turnarounds
+  description: One eligible adjacent pair; inferred gate interval, never observed
+    ground services.
+  columns:
+  - name: outbound_flight_id
+    data_tests:
+    - unique
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('fact_flights')
+          field: flight_id
+  - name: inbound_flight_id
+    data_tests:
+    - unique
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('fact_flights')
+          field: flight_id
+  - name: airport_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('dim_airports')
+          field: airport_id
+- name: fact_disruptions
+  description: One flight outcome, preserving nullable delay/cause measures.
+  columns:
+  - name: flight_id
+    data_tests:
+    - unique
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('fact_flights')
+          field: flight_id
+- name: mart_daily_reliability
+  description: One service date.
+  columns:
+  - name: flight_date
+    data_tests:
+    - unique
+    - not_null
+- name: mart_turnaround_airports
+  description: One IATA turn airport.
+  columns:
+  - name: airport
+    data_tests:
+    - unique
+    - not_null
+- name: mart_turn_bands
+  description: One planned interval band.
+  columns:
+  - name: planned_turn_band
+    data_tests:
+    - unique
+    - not_null
+- name: mart_reported_causes
+  description: One source-reported cause.
+  columns:
+  - name: cause
+    data_tests:
+    - unique
+    - not_null
+- name: mart_link_coverage
+  description: One eligibility/exclusion reason.
+  columns:
+  - name: link_status
+    data_tests:
+    - unique
+    - not_null
+- name: mart_pipeline_audit
+  description: One committed source month.
+  columns:
+  - name: month
+    data_tests:
+    - unique
+    - not_null
+- name: mart_monthly_airport_performance
+  description: One source month and BTS airport ID.
+  columns:
+  - name: airport_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('dim_airports')
+          field: airport_id

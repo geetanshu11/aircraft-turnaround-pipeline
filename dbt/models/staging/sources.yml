@@ -1,0 +1,21 @@
+version: 2
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: flights
+        description: Current accepted full snapshot of each loaded source month; all statuses retained.
+      - name: sequence_barriers
+        description: Tail-days containing rejected movements; no links through these days.
+      - name: blocked_months
+        description: Months with an unassignable rejected movement; conservatively block their links.
+  - name: meta
+    schema: meta
+    tables:
+      - name: partition_versions
+      - name: checkpoints
+      - name: pipeline_runs
+      - name: task_events
+      - name: partition_activations
+      - name: flight_changes
+      - name: quality_results

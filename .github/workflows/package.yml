@@ -1,0 +1,11 @@
+name: Package source
+on: workflow_dispatch
+permissions: {contents: read}
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - run: git archive --format=zip --prefix=aircraft-turnaround/ HEAD -o Aircraft_Turnaround_Platform.zip
+      - uses: actions/upload-artifact@v7.0.2
+        with: {name: source-repository, path: Aircraft_Turnaround_Platform.zip}

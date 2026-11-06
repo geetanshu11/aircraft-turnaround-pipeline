@@ -1,0 +1,8 @@
+runtime*/
+__pycache__/
+.pytest_cache/
+*.duckdb
+*.wal
+*.partial
+*.lock
+*.ipynb_checkpoints/
