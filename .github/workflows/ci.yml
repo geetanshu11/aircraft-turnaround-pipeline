@@ -73,6 +73,9 @@ jobs:
       - run: python scripts/check_dag.py
       - shell: pwsh
         run: ./scripts/setup.ps1 -Profile full
+      - name: Unpause Airflow DAG for CI
+        shell: pwsh
+        run: docker compose --profile full exec -T airflow-api airflow dags unpause -y aircraft_turnaround
       - shell: pwsh
         run: ./scripts/validate-local.ps1 -Full
       - if: always()
